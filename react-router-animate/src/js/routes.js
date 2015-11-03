@@ -1,9 +1,9 @@
 import React from "react"
 import {Route, IndexRoute} from "react-router"
 import App from "./components/App"
-import Home from "./components/Home"
-import Page1 from "./components/Page1"
-import Page2 from "./components/Page2"
+import Home from "./components/pages/Home"
+import Page1 from "./components/pages/Page1"
+import Page2 from "./components/pages/Page2"
 
 
 export default (
