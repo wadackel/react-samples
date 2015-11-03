@@ -1,0 +1,39 @@
+{
+  "name": "react-router-animate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run build && npm run server & npm run watch",
+    "server": "browser-sync start --server --files '*.html, *.css, *.js' --no-notify --reload-delay 500",
+    "watch": "npm run watch:js & npm run watch:sass",
+    "watch:js": "watchify src/js/app.js -o app.bundle.js -t [ babelify --stage 0 ] -v -d",
+    "watch:sass": "node-sass --output-style expanded -r src/sass -o ./ -w",
+    "build": "npm run build:js & npm run build:sass",
+    "build:js": "browserify src/js/app.js -o app.bundle.js -t [ babelify --stage 0 --sourceMapRelative '.' ]",
+    "build:sass": "node-sass --output-style compressed -r src/sass -o ./"
+  },
+  "author": "tsuyoshiwada",
+  "license": "MIT",
+  "devDependencies": {
+    "babelify": "^6.4.0",
+    "browser-sync": "^2.9.11",
+    "browserify": "^12.0.1",
+    "node-sass": "^3.4.1",
+    "watchify": "^3.6.0"
+  },
+  "dependencies": {
+    "history": "^1.13.0",
+    "material-ui": "^0.13.1",
+    "react": "^0.14.2",
+    "react-addons-create-fragment": "^0.14.2",
+    "react-addons-css-transition-group": "^0.14.2",
+    "react-addons-pure-render-mixin": "^0.14.2",
+    "react-addons-transition-group": "^0.14.2",
+    "react-addons-update": "^0.14.2",
+    "react-dom": "^0.14.2",
+    "react-router": "^1.0.0-rc4",
+    "react-static-container": "^1.0.0",
+    "react-tap-event-plugin": "^0.2.1"
+  }
+}
