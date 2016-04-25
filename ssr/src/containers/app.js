@@ -13,13 +13,11 @@ export default class App extends Component {
   }
 
   render() {
-    const list = this.props.data.map(obj => <li key={obj.id}>{obj.id}: {obj.name}</li>);
-
     return (
       <div>
         <h1>Hello SSR!!</h1>
         <p>{this.state.message}</p>
-        <ul>{list}</ul>
+        {this.props.children}
       </div>
     );
   }

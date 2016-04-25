@@ -1,10 +1,10 @@
+"use strict";
+
 import React from "react"
 import {render} from "react-dom"
-import App from "./containers/app"
-
-const initialState = JSON.parse(document.getElementById("initial-state").getAttribute("data-json"));
+import getRoutes from "./routes"
 
 render(
-  <App data={initialState} />,
+  getRoutes(),
   document.getElementById("app")
 );
