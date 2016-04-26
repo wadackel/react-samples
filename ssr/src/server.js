@@ -4,12 +4,26 @@ import path from "path"
 import express from "express"
 import bodyParser from "body-parser"
 import React from "react"
+import {Provider} from "react-redux"
 import {renderToString} from "react-dom/server"
-import {match, RouterContext} from "react-router"
-import getRoutes from "./routes"
+import {match, RouterContext, createMemoryHistory} from "react-router"
+import {syncHistoryWithStore} from "react-router-redux"
+import configureStore from "./store/configureStore"
+import routes from "./routes"
 
 const PORT = process.env.PORT || 3000;
 const app = express();
+
+
+const HTML = ({content, store}) => (
+  <html>
+    <body>
+      <div id="app" dangerouslySetInnerHTML={{__html: content}} />
+      <script id="initial-state" type="text/plain" data-json={JSON.stringify(store.getState())}></script>
+      <script src="/js/client.bundle.js"></script>
+    </body>
+  </html>
+);
 
 
 app.use(bodyParser.urlencoded({extended: false}));
@@ -19,26 +33,12 @@ app.set("view engine", "ejs");
 app.set("views", path.resolve(__dirname, "../views"));
 
 
-function renderFullPage(html) {
-  return `
-  <!DOCTYPE html>
-  <html lang="ja">
-  <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>React ssr sample</title>
-  </head>
-  <body>
-    <div id="app">${html}</div>
-    <script src="/js/client.bundle.js"></script>
-  </body>
-  </html>
-  `;
-}
+app.use((req, res) => {
+  const memoryHistory = createMemoryHistory(req.url);
+  const store = configureStore(memoryHistory);
+  const history = syncHistoryWithStore(memoryHistory, store);
 
-
-app.get("*", (req, res) => {
-  match({routes: getRoutes(), location: req.url}, (error, redirectLocation, renderProps) => {
+  match({history, routes, location: req.url}, (error, redirectLocation, renderProps) => {
     if (error) {
       res.status(500).send(error.message);
 
@@ -46,12 +46,13 @@ app.get("*", (req, res) => {
       res.redirect(302, redirectLocation.pathname + redirectLocation.search);
 
     } else if (renderProps) {
-      const html = renderToString(<RouterContext {...renderProps} />);
-      res.status(200).send(renderFullPage(html));
-      // res.status(200).send(renderToString(<RouterContext {...renderProps} />));
+      const content = renderToString(
+        <Provider store={store}>
+          <RouterContext {...renderProps} />
+        </Provider>
+      );
 
-    } else {
-      res.status(404).send("Not found");
+      res.status(200).send(`<!doctype html>\n${renderToString(<HTML content={content} store={store} />)}`);
     }
   });
 });

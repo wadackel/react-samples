@@ -1,11 +1,5 @@
 "use strict";
 
-import App from "./app"
-import About from "./about"
-import Home from "./home"
-
-export {
-  App,
-  About,
-  Home
-};
+export App from "./app"
+export About from "./about"
+export Home from "./home"
