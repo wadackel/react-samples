@@ -1,6 +1,7 @@
 "use strict";
 
 import React, {Component} from "react"
+import Helmet from "react-helmet"
 import {Link} from "react-router"
 
 export default class App extends Component {
@@ -16,6 +17,13 @@ export default class App extends Component {
   render() {
     return (
       <div>
+        <Helmet
+          title="HOME"
+          titleTemplate="%s - react-ssr sample"
+          meta={[
+            {name: "description", content: "home"}
+          ]}
+        />
         <h1>Hello SSR!!</h1>
         <p>{this.state.message}</p>
         <ul>

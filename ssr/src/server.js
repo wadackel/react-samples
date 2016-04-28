@@ -4,6 +4,7 @@ import path from "path"
 import express from "express"
 import bodyParser from "body-parser"
 import React from "react"
+import Helmet from "react-helmet"
 import {Provider} from "react-redux"
 import {renderToString} from "react-dom/server"
 import {match, RouterContext, createMemoryHistory} from "react-router"
@@ -15,15 +16,26 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 
-const HTML = ({content, store}) => (
-  <html>
-    <body>
-      <div id="app" dangerouslySetInnerHTML={{__html: content}} />
-      <script id="initial-state" type="text/plain" data-json={JSON.stringify(store.getState())}></script>
-      <script src="/js/client.bundle.js"></script>
-    </body>
-  </html>
-);
+const HTML = ({content, store}) => {
+  const head = Helmet.rewind();
+  const attrs = head.htmlAttributes.toComponent();
+
+  return (
+    <html {...attrs}>
+      <head>
+        {head.meta.toComponent()}
+        {head.link.toComponent()}
+        {head.title.toComponent()}
+        {head.style.toComponent()}
+      </head>
+      <body>
+        <div id="app" dangerouslySetInnerHTML={{__html: content}} />
+        <script id="initial-state" type="text/plain" data-json={JSON.stringify(store.getState())}></script>
+        <script src="/js/client.bundle.js"></script>
+      </body>
+    </html>
+  );
+}
 
 
 app.use(bodyParser.urlencoded({extended: false}));
