@@ -6,6 +6,7 @@ import drives from "./drives"
 
 const rootReducer = combineReducers({
   routing: routerReducer,
+  auth: (state = {authenticated: false}) => state,
   drives
 });
 

@@ -1,6 +1,7 @@
 "use strict";
 
 import path from "path"
+import dotenv from "dotenv"
 import express from "express"
 import session from "express-session"
 import cookieParser from "cookie-parser"
@@ -12,10 +13,13 @@ import {renderToString} from "react-dom/server"
 import {match, RouterContext, createMemoryHistory} from "react-router"
 import {syncHistoryWithStore} from "react-router-redux"
 import configureStore from "./store/configureStore"
+import authenticate from "./middleware/auth"
 import routes from "./routes"
 import apiRoutes from "./routes/api"
 import authRoutes from "./routes/auth"
 
+
+dotenv.config();
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -56,13 +60,15 @@ app.use(bodyParser.json());
 app.use(express.static(path.resolve(__dirname, "../public")));
 
 
+app.use(authenticate);
 app.use("/api", apiRoutes);
 app.use("/auth", authRoutes);
 
 
 app.use((req, res) => {
+  const initialState = {auth: {authenticated: req.authenticated}};
   const memoryHistory = createMemoryHistory(req.url);
-  const store = configureStore(memoryHistory);
+  const store = configureStore(memoryHistory, initialState);
   const history = syncHistoryWithStore(memoryHistory, store);
 
   match({history, routes, location: req.url}, (error, redirectLocation, renderProps) => {
@@ -80,6 +86,9 @@ app.use((req, res) => {
       );
 
       res.status(200).send(`<!doctype html>\n${renderToString(<HTML content={content} store={store} />)}`);
+
+    } else {
+      res.status(404).send("Not found");
     }
   });
 });
