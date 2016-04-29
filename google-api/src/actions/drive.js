@@ -23,8 +23,9 @@ export function fetchItems() {
   return (dispatch) => {
     dispatch(requestItems());
     return fetch("/api/")
-      .then((result) => {
-        dispatch(receiveItems({}));
+      .then(res => res.json())
+      .then((items) => {
+        dispatch(receiveItems(items));
       });
   };
 }

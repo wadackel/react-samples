@@ -1,22 +1,21 @@
 "use strict";
 
 import {createStore, combineReducers, compose, applyMiddleware} from "redux"
-import {routerReducer, routerMiddleware} from "react-router-redux"
+import {routerMiddleware} from "react-router-redux"
+import thunk from "redux-thunk"
 import createLogger from "redux-logger"
+import rootReducer from "../reducers/"
 
 export default function configureStore(history, initialState) {
-  const reducer = combineReducers({
-    routing: routerReducer
-  });
-
   const logger = createLogger();
 
   const store = createStore(
-    reducer,
+    rootReducer,
     initialState,
     compose(
       applyMiddleware(
         routerMiddleware(history),
+        thunk,
         logger
       )
     )
