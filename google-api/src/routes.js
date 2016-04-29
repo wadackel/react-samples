@@ -3,6 +3,7 @@
 import React from "react"
 import {Router, Route, IndexRoute} from "react-router"
 import {
+  UserOnly,
   App,
   About,
   Home,
@@ -13,7 +14,9 @@ const routes = (
   <Route path="/" component={App}>
     <IndexRoute component={Home} />
     <Route path="/about/" component={About} />
-    <Route path="/list/" component={List} />
+    <Route component={UserOnly}>
+      <Route path="/list/" component={List} />
+    </Route>
   </Route>
 );
 
