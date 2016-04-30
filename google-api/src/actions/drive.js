@@ -1,7 +1,17 @@
 "use strict";
 
+import assign from "object-assign"
 import fetch from "isomorphic-fetch"
 import checkStatus from "../utils/check-status"
+
+
+function callAPI(url, options = {}) {
+  const params = assign({}, {credentials: "include"}, options);
+
+  return fetch(url, params)
+    .then(checkStatus)
+    .then(res => res.json());
+}
 
 
 // List
@@ -16,7 +26,6 @@ function requestItems() {
 }
 
 function receiveItemsSuccess(items) {
-  console.log(items);
   return {
     type: RECEIVE_ITEMS_SUCCESS,
     items
@@ -32,11 +41,7 @@ function receiveItemsFailure() {
 export function fetchItems() {
   return (dispatch) => {
     dispatch(requestItems());
-    return fetch("/api/", {
-        credentials: "include"
-      })
-      .then(checkStatus)
-      .then(res => res.json())
+    return callAPI("/api/")
       .then((res) => {
         dispatch(receiveItemsSuccess(res.files));
       })
@@ -55,6 +60,7 @@ export const RECEIVE_ADD_ITEM_FAILURE = "RECEIVE_ADD_ITEM_FAILURE";
 function requestAddItem(name, content) {
   return {
     type: REQUEST_ADD_ITEM,
+    isFetching: true,
     name,
     content
   };
@@ -63,13 +69,15 @@ function requestAddItem(name, content) {
 function receiveAddItemSuccess(item) {
   return {
     type: RECEIVE_ADD_ITEM_SUCCESS,
+    isFetching: false,
     item
   };
 }
 
 function receiveAddItemFailure() {
   return {
-    type: RECEIVE_ADD_ITEM_FAILURE
+    type: RECEIVE_ADD_ITEM_FAILURE,
+    isFetching: false
   };
 }
 
@@ -80,18 +88,59 @@ export function addItem(name, content) {
 
   return (dispatch) => {
     dispatch(requestAddItem(name, content));
-    return fetch("/api/", {
+    return callAPI("/api/", {
         method: "POST",
-        body: data,
-        credentials: "include"
+        body: data
       })
-      .then(checkStatus)
-      .then(res => res.json())
       .then((res) => {
         dispatch(receiveAddItemSuccess(res));
       })
       .catch((error) => {
         dispatch(receiveAddItemFailure());
+      });
+  };
+}
+
+
+// Delete
+export const REQUEST_DELETE_ITEM = "REQUEST_DELETE_ITEM";
+export const RECEIVE_DELETE_ITEM_SUCCESS = "RECEIVE_DELETE_ITEM_SUCCESS";
+export const RECEIVE_DELETE_ITEM_FAILURE = "RECEIVE_DELETE_ITEM_FAILURE";
+
+function requestDeleteItem(id) {
+  return {
+    type: REQUEST_DELETE_ITEM,
+    isFetching: true,
+    id
+  };
+}
+
+function receiveDeleteItemSuccess(id) {
+  return {
+    type: RECEIVE_DELETE_ITEM_SUCCESS,
+    isFetching: false,
+    id
+  };
+}
+
+function receiveDeleteItemFailure() {
+  return {
+    type: RECEIVE_DELETE_ITEM_FAILURE,
+    isFetching: false
+  };
+}
+
+export function deleteItem(id) {
+  return (dispatch) => {
+    dispatch(requestDeleteItem(id));
+    return callAPI(`/api/${id}`, {
+        method: "DELETE"
+      })
+      .then((res) => {
+        dispatch(receiveDeleteItemSuccess(id));
+      })
+      .catch((error) => {
+        dispatch(receiveDeleteItemFailure());
       });
   };
 }

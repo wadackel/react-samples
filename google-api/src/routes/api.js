@@ -18,6 +18,7 @@ router.use((req, res, next) => {
 
 router.get("/", (req, res) => {
   req.drive.files.list({
+    fields: "nextPageToken, files(id, name, mimeType, modifiedTime)"
   }, (err, result) => {
     console.log(err, result);
     res.json(err || result);
@@ -44,8 +45,13 @@ router.post("/", multer.array(), (req, res) => {
 });
 
 router.delete("/:id", (req, res) => {
-  console.log(req.params.id);
-  res.json({});
+  const {id} = req.params;
+
+  req.drive.files.delete({
+    fileId: id
+  }, (err, result) => {
+    res.json(err || {id});
+  });
 });
 
 export default router;
