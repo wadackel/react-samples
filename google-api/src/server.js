@@ -1,9 +1,10 @@
 "use strict";
 
-import path from "path"
 import dotenv from "dotenv"
+dotenv.config();
+
+import path from "path"
 import express from "express"
-import session from "express-session"
 import cookieParser from "cookie-parser"
 import bodyParser from "body-parser"
 import React from "react"
@@ -19,7 +20,6 @@ import apiRoutes from "./routes/api"
 import authRoutes from "./routes/auth"
 
 
-dotenv.config();
 const PORT = process.env.PORT || 3000;
 const app = express();
 
@@ -47,14 +47,6 @@ const HTML = ({content, store}) => {
 
 
 app.use(cookieParser());
-app.use(session({
-  secret: "keyboard cat",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 60 * 1000
-  }
-}));
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 app.use(express.static(path.resolve(__dirname, "../public")));

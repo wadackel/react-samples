@@ -1,16 +1,24 @@
 "use strict";
 
-const Google = require("googleapis");
-const GoogleAuth = require("google-auth-library");
-const SCOPES = ["https://www.googleapis.com/auth/drive.appdata"];
+import Google from "googleapis"
+import GoogleAuth from "google-auth-library"
+import {
+  VERSION,
+  CLIENT_ID,
+  CLIENT_SECRET,
+  REDIRECT_URL,
+  SPACES,
+  SCOPES
+} from "../constants/google-drive"
+
 
 module.exports = (req, res, next) => {
-  const token = req.session.token;
+  const token = req.cookies.token;
   const auth = new GoogleAuth();
   const oauth2Client = new auth.OAuth2(
-    process.env.CLIENT_ID,
-    process.env.CLIENT_SECRET,
-    process.env.REDIRECT_URL
+    CLIENT_ID,
+    CLIENT_SECRET,
+    REDIRECT_URL
   );
 
   req.oauth2Client = oauth2Client;
@@ -26,7 +34,13 @@ module.exports = (req, res, next) => {
 
   oauth2Client.credentials = token;
 
-  const drive = Google.drive({version: "v3", auth: oauth2Client});
+  const drive = Google.drive({
+    version: VERSION,
+    auth: oauth2Client,
+    params: {
+      spaces: SPACES
+    }
+  });
 
   req.authenticated = true;
   req.drive = drive;

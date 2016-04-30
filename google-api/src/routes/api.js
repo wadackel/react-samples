@@ -1,21 +1,46 @@
 "use strict";
 
 import {Router} from "express"
+import Multer from "multer"
+
 const router = Router();
+const multer = Multer();
+
+
+router.use((req, res, next) => {
+  const token = req.cookies.token;
+  if (!req.authenticated) {
+    res.status(401).json({status: "error", message: "Login is required"});
+  } else {
+    next();
+  }
+});
 
 router.get("/", (req, res) => {
-  res.json([
-    {id: 1, name: "item1"},
-    {id: 2, name: "item2"},
-    {id: 3, name: "item3"},
-    {id: 4, name: "item4"},
-    {id: 5, name: "item5"},
-    {id: 6, name: "item6"},
-    {id: 7, name: "item7"},
-    {id: 8, name: "item8"},
-    {id: 9, name: "item9"},
-    {id: 10, name: "item10"}
-  ]);
+  req.drive.files.list({
+  }, (err, result) => {
+    console.log(err, result);
+    res.json(err || result);
+  });
+});
+
+router.post("/", multer.array(), (req, res) => {
+  const {name, content} = req.body;
+
+  req.drive.files.create({
+    resource: {
+      name,
+      mimeType: "text/plain",
+      parents: ["appDataFolder"]
+    },
+    media: {
+      mimeType: "text/plain",
+      body: content
+    }
+  }, (err, result) => {
+    console.log(err, result);
+    res.json(err || result);
+  });
 });
 
 export default router;

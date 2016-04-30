@@ -1,9 +1,12 @@
 "use strict";
 
 import {Router} from "express"
+import * as Cookie from "../constants/cookie"
+
 const router = Router();
 const SUCCESS_REDIRECT = "/list/";
 const FAILURE_REDIRECT = "/";
+
 
 router.get("/login", (req, res) => {
   if (req.authenticated) {
@@ -22,7 +25,12 @@ router.get("/callback", (req, res) => {
       res.redirect(FAILURE_REDIRECT);
       return;
     }
-    req.session.token = token;
+
+    res.cookie("token", token, {
+      path: Cookie.PATH,
+      expires: Cookie.EXPIRES
+    });
+
     res.redirect(SUCCESS_REDIRECT);
   });
 });
