@@ -43,4 +43,9 @@ router.post("/", multer.array(), (req, res) => {
   });
 });
 
+router.delete("/:id", (req, res) => {
+  console.log(req.params.id);
+  res.json({});
+});
+
 export default router;

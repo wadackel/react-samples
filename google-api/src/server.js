@@ -7,6 +7,7 @@ import path from "path"
 import express from "express"
 import cookieParser from "cookie-parser"
 import bodyParser from "body-parser"
+import methodOverride from "method-override"
 import React from "react"
 import Helmet from "react-helmet"
 import {Provider} from "react-redux"
@@ -49,6 +50,9 @@ const HTML = ({content, store}) => {
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+app.use(methodOverride("X-HTTP-Method"));
+app.use(methodOverride("X-HTTP-Method-Override"));
+app.use(methodOverride("X-Method-Override"));
 app.use(express.static(path.resolve(__dirname, "../public")));
 
 
