@@ -3,6 +3,7 @@
 import fs from "fs"
 import {Router} from "express"
 import Multer from "multer"
+import webshot from "webshot"
 
 const router = Router();
 const multer = Multer();
@@ -79,6 +80,37 @@ router.delete("/:id", (req, res) => {
   }, (err, result) => {
     res.json(err || {id});
   });
+});
+
+
+// TODO
+// * クライアント側で、スクリーンショットをform-dataとしてサーバへ送る
+// * Streamに変換後、GoogleDriveへ保存
+router.get("/screenshot/:url", (req, res) => {
+  const chunks = [];
+  const renderStream = webshot(req.params.url, {
+    screenSize: {
+      width: 1280,
+      height: 768
+    },
+    shotSize: {
+      width: 1280,
+      height: "all"
+    }
+  });
+
+  renderStream
+    .on("data", (data) => {
+      chunks.push(new Buffer(data));
+    })
+    .on("end", () => {
+      const buffer = Buffer.concat(chunks);
+      res.status(200).end(buffer, "binary");
+    });
+});
+
+router.post("/upload", (req, res) => {
+  res.json(req.body);
 });
 
 export default router;

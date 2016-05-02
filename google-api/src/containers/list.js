@@ -9,6 +9,13 @@ import * as driveActions from "../actions/drive"
 import fetch from "isomorphic-fetch"
 
 class List extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      screenshot: ""
+    };
+  }
+
   componentWillMount() {
     this.props.fetchItems();
   }
@@ -22,6 +29,12 @@ class List extends Component {
 
   handleItemClick(id) {
     this.props.deleteItem(id);
+  }
+
+  handleUrlSubmit(e) {
+    e.preventDefault();
+    const url = this.refs.url.value.trim();
+    this.setState({screenshot: `/api/screenshot/${encodeURIComponent(url)}`});
   }
 
   renderItems() {
@@ -46,6 +59,12 @@ class List extends Component {
           <input ref="name" type="text" defaultValue="Filename" />
           <input ref="content" type="text" defaultValue="Hello World!!" />
           <button type="submit">Submit</button>
+        </form>
+
+        <form onSubmit={this.handleUrlSubmit.bind(this)}>
+          <input type="text" ref="url" defaultValue="https://blog.wadackel.me" />
+          <button type="submit">Submit</button>
+          <img src={this.state.screenshot} />
         </form>
 
         <h2>List</h2>
