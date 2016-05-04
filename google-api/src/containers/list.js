@@ -5,14 +5,16 @@ import Helmet from "react-helmet"
 import {bindActionCreators} from "redux"
 import {connect} from "react-redux"
 import * as driveActions from "../actions/drive"
+import {imageToBlob} from "../utils/blob"
 
 import fetch from "isomorphic-fetch"
+
 
 class List extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      screenshot: ""
+      screenshot: `/api/screenshot/${encodeURIComponent("https://blog.wadackel.me")}`
     };
   }
 
@@ -27,7 +29,7 @@ class List extends Component {
     this.props.addItem(name, content);
   }
 
-  handleItemClick(id) {
+  handleDeleteClick(id) {
     this.props.deleteItem(id);
   }
 
@@ -37,12 +39,34 @@ class List extends Component {
     this.setState({screenshot: `/api/screenshot/${encodeURIComponent(url)}`});
   }
 
+  handleImageSubmit(e) {
+    e.preventDefault();
+
+    imageToBlob(this.refs.screenshotImage).then((blob) => {
+      const formData = new FormData();
+      formData.append("screenshot", blob);
+
+      fetch(`/api/upload/`, {
+        method: "POST",
+        body: formData,
+        credentials: "include"
+      })
+      .then(res => res.json())
+      .then((res) => {
+        this.props.fetchItems();
+      });
+    });
+  }
+
   renderItems() {
     return this.props.drives.items.map((item) =>
-      <li key={item.id} onClick={(e) => {
-        e.preventDefault();
-        this.handleItemClick(item.id);
-      }}>{item.id} : {item.name}</li>
+      <li key={item.id}>
+        [{item.id}] {item.name}
+        {" - "}
+        <a href={`/api/${item.id}`} target="_blank">Show</a>
+        {" "}
+        <button type="button" onClick={e => this.handleDeleteClick(item.id)}>Delete</button>
+      </li>
     );
   }
 
@@ -63,12 +87,15 @@ class List extends Component {
 
         <form onSubmit={this.handleUrlSubmit.bind(this)}>
           <input type="text" ref="url" defaultValue="https://blog.wadackel.me" />
-          <button type="submit">Submit</button>
-          <img src={this.state.screenshot} />
+          <button type="submit">Get image</button>
+          <button type="button" onClick={this.handleImageSubmit.bind(this)}>Submit</button>
         </form>
 
         <h2>List</h2>
         {this.renderItems()}
+
+        <h2>Screenshot</h2>
+        <img ref="screenshotImage" src={this.state.screenshot} style={{maxWidth: "500px", height: "auto", border: "1px solid #000"}} />
       </div>
     );
   }

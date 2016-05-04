@@ -1,12 +1,15 @@
 "use strict";
 
 import fs from "fs"
+import path from "path"
 import {Router} from "express"
 import Multer from "multer"
 import webshot from "webshot"
 
 const router = Router();
-const multer = Multer();
+const multer = Multer({
+  dest: path.join(__dirname, "/../../tmp")
+});
 
 
 router.use((req, res, next) => {
@@ -20,7 +23,7 @@ router.use((req, res, next) => {
 
 router.get("/", (req, res) => {
   req.drive.files.list({
-    fields: "nextPageToken, files(id, name, mimeType, modifiedTime)"
+    fields: "nextPageToken, files(id, name, thumbnailLink, mimeType, modifiedTime)"
   }, (err, result) => {
     console.log(err, result);
     res.json(err || result);
@@ -48,28 +51,18 @@ router.post("/", multer.array(), (req, res) => {
 
 router.get("/:id", (req, res) => {
   const {id} = req.params;
-  const tmpPath = `${__dirname}/../../tmp/text.txt`;
-  const dest = fs.createWriteStream(tmpPath);
   const chunks = [];
 
   req.drive.files.get({
-    fileId: id,
-    alt: "media"
-  })
-  .on("end", () => {
-    const buffer = Buffer.concat(chunks);
-    res.json({
-      id,
-      body: buffer.toString()
+      fileId: id,
+      alt: "media"
+    })
+    .on("error", err => res.json(err))
+    .on("data", data => chunks.push(new Buffer(data)))
+    .on("end", () => {
+      const buffer = Buffer.concat(chunks);
+      res.status(200).end(buffer, "binary");
     });
-  })
-  .on("data", (data) => {
-    chunks.push(data);
-  })
-  .on("error", (err) => {
-    console.log("ERROR", err);
-  })
-  .pipe(dest);
 });
 
 router.delete("/:id", (req, res) => {
@@ -83,9 +76,6 @@ router.delete("/:id", (req, res) => {
 });
 
 
-// TODO
-// * クライアント側で、スクリーンショットをform-dataとしてサーバへ送る
-// * Streamに変換後、GoogleDriveへ保存
 router.get("/screenshot/:url", (req, res) => {
   const chunks = [];
   const renderStream = webshot(req.params.url, {
@@ -109,8 +99,23 @@ router.get("/screenshot/:url", (req, res) => {
     });
 });
 
-router.post("/upload", (req, res) => {
-  res.json(req.body);
+router.post("/upload", multer.fields([{name: "screenshot"}]), (req, res) => {
+  const screenshot = req.files.screenshot[0];
+
+  req.drive.files.create({
+    resource: {
+      name: screenshot.filename,
+      mimeType: screenshot.mimetype,
+      parents: ["appDataFolder"]
+    },
+    media: {
+      body: fs.createReadStream(screenshot.path),
+      mimeType: screenshot.mimetype
+    }
+  }, (err, file) => {
+    console.log(err, file);
+    res.json(err || file);
+  });
 });
 
 export default router;
