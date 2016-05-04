@@ -113,6 +113,9 @@ router.post("/upload", multer.fields([{name: "screenshot"}]), (req, res) => {
       mimeType: screenshot.mimetype
     }
   }, (err, file) => {
+    if (file) {
+      fs.unlinkSync(screenshot.path);
+    }
     console.log(err, file);
     res.json(err || file);
   });
