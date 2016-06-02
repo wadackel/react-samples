@@ -5,8 +5,7 @@ import IconMenu from "material-ui/IconMenu";
 import MenuItem from "material-ui/MenuItem";
 import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import NavigationClose from "material-ui/svg-icons/navigation/close";
-import RotateLeftIcon from "material-ui/svg-icons/image/rotate-left";
-import RotateRightIcon from "material-ui/svg-icons/image/rotate-right";
+import ImageIcon from "material-ui/svg-icons/image/image";
 import bindHandlerHelper from "../utils/bind-handler-helper";
 import ImageViewer from "./image-viewer";
 
@@ -16,23 +15,29 @@ export default class App extends Component {
   constructor(props) {
     super(props);
 
-    const { width: sw, height: sh } = this.getWindowSize();
-
-    this.state = {sw, sh};
+    this.state = {
+      image: "./images/image1.png",
+      sw: 0,
+      sh: 0
+    };
 
     bindHandlerHelper([
-      "handleResize"
+      "handleResize",
+      "handleImageChange"
     ], this);
   }
 
   componentDidMount() {
+    const { width: sw, height: sh } = this.getWindowSize();
+    this.setState({sw, sh});
+
     window.addEventListener("resize", this.handleResize);
   }
 
   getWindowSize() {
     return {
       width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight - APP_BAR_HEIGHT
+      height: document.documentElement.clientHeight
     };
   }
 
@@ -41,8 +46,12 @@ export default class App extends Component {
     this.setState({sw, sh});
   }
 
+  handleImageChange(e, child) {
+    this.setState({image: child.props.value});
+  }
+
   render() {
-    const { sw, sh } = this.state;
+    const { sw, sh, image } = this.state;
 
     return (
       <div style={{width: "100%", height: "100%"}}>
@@ -56,9 +65,10 @@ export default class App extends Component {
               }
               targetOrigin={{horizontal: "right", vertical: "top"}}
               anchorOrigin={{horizontal: "right", vertical: "top"}}
+              onItemTouchTap={this.handleImageChange}
             >
-              <MenuItem primaryText="45°" leftIcon={<RotateRightIcon />} />
-              <MenuItem primaryText="-45°" leftIcon={<RotateLeftIcon />} />
+              <MenuItem primaryText="image1" leftIcon={<ImageIcon />} value="./images/image1.png" />
+              <MenuItem primaryText="image2" leftIcon={<ImageIcon />} value="./images/image2.png" />
             </IconMenu>
           }
           style={{
@@ -69,7 +79,14 @@ export default class App extends Component {
             zIndex: 999
           }}
         />
-        <ImageViewer width={sw} height={sh} style={{marginTop: APP_BAR_HEIGHT}} image="./images/screenshot.png" />
+        <ImageViewer
+          style={{
+            width: sw,
+            height: sh,
+            overflow: "hidden"
+          }}
+          image={image}
+        />
       </div>
     );
     return ;
