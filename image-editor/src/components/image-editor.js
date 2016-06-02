@@ -1,15 +1,17 @@
 import React, { Component } from "react";
-
-function bindHandlerHelper(handlers, instance) {
-  handlers.forEach(handler => {
-    instance[handler] = instance[handler].bind(instance);
-  });
-}
+import bindHandlerHelper from "../utils/bind-handler-helper";
 
 export default class ImageEditor extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      image: {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      }
+    };
 
     bindHandlerHelper([
       "handleImageLoaded"
@@ -29,19 +31,12 @@ export default class ImageEditor extends Component {
     this.img = img;
   }
 
-  handleImageLoaded(e) {
-    const { width, height } = this.props;
-    const { width: imgW, height: imgH } = this.img;
+  componentDidUpdate() {
+    this.renderImage();
+  }
 
-    const size = this.normalizeSize(width, height, imgW, imgH);
-
-    this.ctx.drawImage(
-      this.img,
-      width / 2 - size.width / 2,
-      height / 2 - size.height / 2,
-      size.width,
-      size.height
-    );
+  handleImageLoaded() {
+    this.renderImage();
   }
 
   normalizeSize(sw, sh, dw, dh) {
@@ -64,8 +59,42 @@ export default class ImageEditor extends Component {
     return {width, height};
   }
 
-  render() {
+  clearImage() {
     const { width, height } = this.props;
-    return <canvas ref="canvas" width={width} height={height}></canvas>;
+    const { image } = this.state;
+
+    this.ctx.clearRect(
+      Math.max(0, Math.min(image.left, width)),
+      Math.max(0, Math.min(image.top, height)),
+      image.width,
+      image.height
+    );
+  }
+
+  renderImage() {
+    const { width, height } = this.props;
+    const { width: imgW, height: imgH } = this.img;
+
+    const size = this.normalizeSize(width, height, imgW, imgH);
+
+    const { image } = this.state;
+    image.top = height / 2 - size.height / 2;
+    image.left = width / 2 - size.width / 2;
+    image.width = size.width;
+    image.height = size.height;
+    this.state.image = image;
+
+    this.ctx.drawImage(
+      this.img,
+      image.left,
+      image.top,
+      image.width,
+      image.height
+    );
+  }
+
+  render() {
+    const { width, height, style } = this.props;
+    return <canvas ref="canvas" width={width} height={height} style={style} />;
   }
 }

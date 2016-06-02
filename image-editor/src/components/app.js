@@ -7,16 +7,43 @@ import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import NavigationClose from "material-ui/svg-icons/navigation/close";
 import RotateLeftIcon from "material-ui/svg-icons/image/rotate-left";
 import RotateRightIcon from "material-ui/svg-icons/image/rotate-right";
+import bindHandlerHelper from "../utils/bind-handler-helper";
 import ImageEditor from "./image-editor";
 
+const APP_BAR_HEIGHT = 64;
 
 export default class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+
+    const { width: sw, height: sh } = this.getWindowSize();
+
+    this.state = {sw, sh};
+
+    bindHandlerHelper([
+      "handleResize"
+    ], this);
+  }
+
+  componentDidMount() {
+    window.addEventListener("resize", this.handleResize);
+  }
+
+  getWindowSize() {
+    return {
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight - APP_BAR_HEIGHT
+    };
+  }
+
+  handleResize() {
+    const { width: sw, height: sh } = this.getWindowSize();
+    this.setState({sw, sh});
   }
 
   render() {
+    const { sw, sh } = this.state;
+
     return (
       <div style={{width: "100%", height: "100%"}}>
         <AppBar
@@ -34,8 +61,15 @@ export default class App extends Component {
               <MenuItem primaryText="-45°" leftIcon={<RotateLeftIcon />} />
             </IconMenu>
           }
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            left: 0,
+            zIndex: 999
+          }}
         />
-        <ImageEditor width="500" height="500" image="./images/screenshot.png" />
+        <ImageEditor width={sw} height={sh} style={{marginTop: APP_BAR_HEIGHT}} image="./images/screenshot.png" />
       </div>
     );
     return ;
