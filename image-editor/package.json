@@ -1,0 +1,27 @@
+{
+  "name": "image-editor-sample",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "browser-sync start --server --files 'index.html, style.css, bundle.js' --no-notify --no-open --no-ghost-mode & npm run watch",
+    "build": "browserify -e src/entry.js -o bundle.js -t [ babelify ]",
+    "watch": "watchify -e src/entry.js -o bundle.js -t [ babelify ] -d -v"
+  },
+  "author": "tsuyoshiwada",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.9.0",
+    "babel-preset-react": "^6.5.0",
+    "babel-preset-stage-1": "^6.5.0",
+    "babelify": "^7.3.0",
+    "browser-sync": "^2.12.10",
+    "browserify": "^13.0.1",
+    "watchify": "^3.7.0"
+  },
+  "dependencies": {
+    "react": "^15.1.0",
+    "react-dom": "^15.1.0"
+  }
+}
