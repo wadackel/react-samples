@@ -8,7 +8,7 @@ import NavigationClose from "material-ui/svg-icons/navigation/close";
 import RotateLeftIcon from "material-ui/svg-icons/image/rotate-left";
 import RotateRightIcon from "material-ui/svg-icons/image/rotate-right";
 import bindHandlerHelper from "../utils/bind-handler-helper";
-import ImageEditor from "./image-editor";
+import ImageViewer from "./image-viewer";
 
 const APP_BAR_HEIGHT = 64;
 
@@ -47,7 +47,7 @@ export default class App extends Component {
     return (
       <div style={{width: "100%", height: "100%"}}>
         <AppBar
-          title="ImageEditor"
+          title="ImageViewer"
           iconElementLeft={<span />}
           iconElementRight={
             <IconMenu
@@ -69,7 +69,7 @@ export default class App extends Component {
             zIndex: 999
           }}
         />
-        <ImageEditor width={sw} height={sh} style={{marginTop: APP_BAR_HEIGHT}} image="./images/screenshot.png" />
+        <ImageViewer width={sw} height={sh} style={{marginTop: APP_BAR_HEIGHT}} image="./images/screenshot.png" />
       </div>
     );
     return ;

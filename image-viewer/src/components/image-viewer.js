@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import bindHandlerHelper from "../utils/bind-handler-helper";
 
-export default class ImageEditor extends Component {
+export default class ImageViewer extends Component {
   constructor(props) {
     super(props);
     this.state = {
