@@ -3,6 +3,7 @@ import AppBar from "material-ui/AppBar";
 import IconButton from "material-ui/IconButton";
 import IconMenu from "material-ui/IconMenu";
 import MenuItem from "material-ui/MenuItem";
+import Slider from "material-ui/Slider";
 import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import NavigationClose from "material-ui/svg-icons/navigation/close";
 import ImageIcon from "material-ui/svg-icons/image/image";
@@ -16,14 +17,16 @@ export default class App extends Component {
     super(props);
 
     this.state = {
-      image: "./images/image1.png",
       sw: 0,
-      sh: 0
+      sh: 0,
+      image: "./images/image1.png",
+      zoom: 0.5
     };
 
     bindHandlerHelper([
       "handleResize",
-      "handleImageChange"
+      "handleImageChange",
+      "handleZoomChange"
     ], this);
   }
 
@@ -50,8 +53,12 @@ export default class App extends Component {
     this.setState({image: child.props.value});
   }
 
+  handleZoomChange(e, zoom) {
+    this.setState({zoom});
+  }
+
   render() {
-    const { sw, sh, image } = this.state;
+    const { sw, sh, image, zoom } = this.state;
 
     return (
       <div style={{width: "100%", height: "100%"}}>
@@ -86,6 +93,17 @@ export default class App extends Component {
             overflow: "hidden"
           }}
           image={image}
+          zoom={zoom}
+        />
+        <Slider
+          defaultValue={zoom}
+          style={{
+            position: "absolute",
+            right: 30,
+            bottom: 0,
+            width: 300
+          }}
+          onChange={this.handleZoomChange}
         />
       </div>
     );

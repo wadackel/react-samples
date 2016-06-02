@@ -8,6 +8,7 @@ export default class ImageViewer extends Component {
     style: {
       overflow: "hidden"
     },
+    zoom: 0.5,
     iScrollOptions: {
       bounce: true,
       click: true,
@@ -21,7 +22,11 @@ export default class ImageViewer extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
+
+    this.state = {
+      naturalWidth: 0,
+      naturalHeight: 0
+    };
 
     bindHandlerHelper([
       "handleImageLoaded"
@@ -46,7 +51,29 @@ export default class ImageViewer extends Component {
     this.iScroll = null;
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.zoom !== this.props.zoom) {
+      this.updateImageSize();
+    }
+  }
+
   handleImageLoaded(e) {
+    const { width, height } = this.refs.image;
+
+    this.setState({naturalWidth: width, naturalHeight: height});
+    this.updateImageSize();
+
+    this.refresh();
+  }
+
+  updateImageSize() {
+    const { zoom } = this.props;
+    const { naturalWidth, naturalHeight } = this.state;
+    const { image } = this.refs;
+
+    image.width = naturalWidth * zoom;
+    image.height = naturalHeight * zoom;
+
     this.refresh();
   }
 
