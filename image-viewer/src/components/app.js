@@ -96,6 +96,7 @@ export default class App extends Component {
                 menuItems={[
                   <MenuItem primaryText="Zoom in" leftIcon={<ZoomInIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom + 0.4)} />,
                   <MenuItem primaryText="Zoom out" leftIcon={<ZoomOutIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom - 0.4)} />,
+                  <MenuItem primaryText="100%" leftIcon={<ZoomOutIcon />} onTouchTap={() => this.handleZoomChange(1)} />,
                 ]}
               />
               <MenuItem
