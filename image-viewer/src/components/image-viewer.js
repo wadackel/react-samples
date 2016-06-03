@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import IScroll from "iscroll";
-import bindHandlerHelper from "../utils/bind-handler-helper";
 
 export default class ImageViewer extends Component {
   static defaultProps = {
@@ -24,13 +23,11 @@ export default class ImageViewer extends Component {
     super(props);
 
     this.state = {
+      width: 0,
+      height: 0,
       naturalWidth: 0,
       naturalHeight: 0
     };
-
-    bindHandlerHelper([
-      "handleImageLoaded"
-    ], this);
   }
 
   componentDidMount() {
@@ -38,12 +35,7 @@ export default class ImageViewer extends Component {
     const { iScroll, image } = this.refs;
 
     this.iScroll = new IScroll(iScroll, iScrollOptions);
-
-    image.addEventListener("load", this.handleImageLoaded, false);
-  }
-
-  componentDidUpdate() {
-    this.refresh();
+    this.updateImageSize();
   }
 
   componentWillUnmount() {
@@ -57,24 +49,37 @@ export default class ImageViewer extends Component {
     }
   }
 
-  handleImageLoaded(e) {
-    const { width, height } = this.refs.image;
+  getImageSize() {
+    return new Promise((resolve, reject) => {
+      const { image } = this.refs;
+      const { width, height, naturalWidth, naturalHeight } = image;
 
-    this.setState({naturalWidth: width, naturalHeight: height});
-    this.updateImageSize();
+      if (width !== 0 || height !== 0 || naturalWidth !== 0 || naturalHeight !== 0) {
+        resolve({width, height, naturalWidth, naturalHeight});
+        return;
+      }
 
-    this.refresh();
+      image.addEventListener("load", () => {
+        this.getImageSize().then(resolve);
+      }, false);
+
+      image.addEventListener("error", reject, false);
+    });
   }
 
   updateImageSize() {
     const { zoom } = this.props;
-    const { naturalWidth, naturalHeight } = this.state;
     const { image } = this.refs;
 
-    image.width = naturalWidth * zoom;
-    image.height = naturalHeight * zoom;
-
-    this.refresh();
+    this.getImageSize().then(({width, height, naturalWidth, naturalHeight}) => {
+      this.setState({
+        width: Math.max(1, naturalWidth * zoom),
+        height: Math.max(1, naturalHeight * zoom),
+        naturalWidth,
+        naturalHeight
+      });
+      this.refresh();
+    });
   }
 
   refresh() {
@@ -82,11 +87,37 @@ export default class ImageViewer extends Component {
   }
 
   render() {
-    const { image, style, className } = this.props;
+    const { image, className } = this.props;
+    const { width, height } = this.state;
+    const style = Object.assign({}, ImageViewer.defaultProps.style, this.props.style);
 
     return (
       <div ref="iScroll" className={className} style={style}>
-        <img ref="image" src={image} />
+        <div ref="wrapper" style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          minWidth: width,
+          minHeight: height
+        }}>
+          <div ref="holder" style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%"
+          }}>
+            <img
+              ref="image"
+              src={image}
+              style={{
+                position: "relative",
+                top: height / 2 * -1,
+                left: width / 2 * -1,
+                width,
+                height
+              }}
+            />
+          </div>
+        </div>
       </div>
     );
   }

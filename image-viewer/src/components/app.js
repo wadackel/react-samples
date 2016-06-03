@@ -20,7 +20,7 @@ export default class App extends Component {
       sw: 0,
       sh: 0,
       image: "./images/image1.png",
-      zoom: 0.5
+      zoom: 1
     };
 
     bindHandlerHelper([
@@ -40,7 +40,7 @@ export default class App extends Component {
   getWindowSize() {
     return {
       width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight
+      height: document.documentElement.clientHeight - APP_BAR_HEIGHT
     };
   }
 
@@ -50,7 +50,10 @@ export default class App extends Component {
   }
 
   handleImageChange(e, child) {
-    this.setState({image: child.props.value});
+    this.setState({
+      image: child.props.value,
+      zoom: 1
+    });
   }
 
   handleZoomChange(e, zoom) {
@@ -88,6 +91,8 @@ export default class App extends Component {
         />
         <ImageViewer
           style={{
+            position: "relative",
+            top: APP_BAR_HEIGHT,
             width: sw,
             height: sh,
             overflow: "hidden"
@@ -96,7 +101,9 @@ export default class App extends Component {
           zoom={zoom}
         />
         <Slider
-          defaultValue={zoom}
+          value={zoom}
+          min={0.1}
+          max={2}
           style={{
             position: "absolute",
             right: 30,
