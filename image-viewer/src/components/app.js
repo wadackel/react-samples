@@ -9,6 +9,7 @@ import NavigationClose from "material-ui/svg-icons/navigation/close";
 import ImageIcon from "material-ui/svg-icons/image/image";
 import ZoomInIcon from "material-ui/svg-icons/action/zoom-in";
 import ZoomOutIcon from "material-ui/svg-icons/action/zoom-out";
+import ZoomOutMapIcon from "material-ui/svg-icons/maps/zoom-out-map";
 import ArrowDropRight from "material-ui/svg-icons/navigation-arrow-drop-right";
 import bindHandlerHelper from "../utils/bind-handler-helper";
 import ImageViewer from "./image-viewer";
@@ -16,7 +17,7 @@ import ImageViewer from "./image-viewer";
 const APP_BAR_HEIGHT = 64;
 
 const Zoom = {
-  MIN: 0.1,
+  MIN: 0.01,
   MAX: 2
 };
 
@@ -33,13 +34,15 @@ export default class App extends Component {
       sw: 0,
       sh: 0,
       image: Images.IMAGE1,
-      zoom: 1
+      zoom: 1,
+      forceFitViewport: false
     };
 
     bindHandlerHelper([
       "handleResize",
       "handleImageChange",
-      "handleZoomChange"
+      "handleZoomChange",
+      "handleFitViewport"
     ], this);
   }
 
@@ -71,11 +74,21 @@ export default class App extends Component {
 
   handleZoomChange(value) {
     const zoom = Math.max(Zoom.MIN, Math.min(Zoom.MAX, value));
-    this.setState({zoom});
+
+    console.log(zoom);
+
+    this.setState({
+      forceFitViewport: false,
+      zoom
+    });
+  }
+
+  handleFitViewport() {
+    this.setState({forceFitViewport: true});
   }
 
   render() {
-    const { sw, sh, image, zoom } = this.state;
+    const { sw, sh, image, zoom, forceFitViewport } = this.state;
 
     return (
       <div style={{width: "100%", height: "100%"}}>
@@ -97,6 +110,7 @@ export default class App extends Component {
                   <MenuItem primaryText="Zoom in" leftIcon={<ZoomInIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom + 0.4)} />,
                   <MenuItem primaryText="Zoom out" leftIcon={<ZoomOutIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom - 0.4)} />,
                   <MenuItem primaryText="100%" leftIcon={<ZoomOutIcon />} onTouchTap={() => this.handleZoomChange(1)} />,
+                  <MenuItem primaryText="Fit screen" leftIcon={<ZoomOutMapIcon />} onTouchTap={this.handleFitViewport} />
                 ]}
               />
               <MenuItem
@@ -125,8 +139,8 @@ export default class App extends Component {
           }}
           image={image}
           zoom={zoom}
-          forceFitViewport={true}
-          onZoomChange={value => console.log("zoomChange", value)}
+          forceFitViewport={forceFitViewport}
+          onZoomChange={value => this.handleZoomChange(value)}
         />
         <Slider
           value={zoom}

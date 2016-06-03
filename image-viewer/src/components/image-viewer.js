@@ -52,15 +52,17 @@ export default class ImageViewer extends Component {
 
   componentDidUpdate() {
     const { vw, vh } = this.state;
+    const { width: dw } = this.refs.image;
     const { width, height } = this.getViewportSize();
     const { forceFitViewport } = this.props;
+    const zoom = dw / width;
 
     if (vw !== width || vh !== height) {
       this.setState({vw: width, vh: height});
+    }
 
-      if (forceFitViewport) {
-        this.updateImageSize();
-      }
+    if (forceFitViewport && zoom !== this.props.zoom) {
+      this.props.onZoomChange(zoom);
     }
   }
 
@@ -70,9 +72,11 @@ export default class ImageViewer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.zoom !== this.props.zoom) {
-      this.updateImageSize(nextProps.zoom);
-      this.props.onZoomChange(nextProps.zoom);
+    if (nextProps.forceFitViewport !== this.props.forceFitViewport && nextProps.forceFitViewport === true) {
+      this.updateImageSize(null, true);
+
+    } else if (nextProps.zoom !== this.props.zoom) {
+      this.updateImageSize(nextProps.zoom, false);
     }
   }
 
@@ -94,32 +98,33 @@ export default class ImageViewer extends Component {
     });
   }
 
-  updateImageSize(zoom) {
-    const { forceFitViewport } = this.props;
-    const { image } = this.refs;
+  updateImageSize(zoom = null, forceFitViewport) {
+    return new Promise((resolve, reject) => {
+      const { image } = this.refs;
 
-    this.getImageSize().then(({width: w, height: h, naturalWidth, naturalHeight}) => {
-      let width;
-      let height;
+      this.getImageSize().then(({width: w, height: h, naturalWidth, naturalHeight}) => {
+        let width;
+        let height;
 
-      if (forceFitViewport) {
-        const size = this.normalizeImageSize(naturalWidth, naturalHeight);
-        width = size.width;
-        height = size.height;
+        if (forceFitViewport) {
+          const size = this.normalizeImageSize(naturalWidth, naturalHeight);
+          width = size.width;
+          height = size.height;
 
-      } else {
-        width = naturalWidth * zoom;
-        height = naturalHeight * zoom;
-      }
+        } else {
+          width = naturalWidth * zoom;
+          height = naturalHeight * zoom;
+        }
 
-      this.setState({
-        width,
-        height,
-        naturalWidth,
-        naturalHeight
+        this.setState({
+          width,
+          height,
+          naturalWidth,
+          naturalHeight
+        });
+
+        this.refresh();
       });
-
-      this.refresh();
     });
   }
 
