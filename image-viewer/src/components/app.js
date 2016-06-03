@@ -57,7 +57,7 @@ export default class App extends Component {
   }
 
   handleZoomFit() {
-    console.log("FIT");
+    this.setState({forceFitViewport: true});
   }
 
   handleImageChange(image) {
@@ -85,7 +85,7 @@ export default class App extends Component {
           image={image}
           zoom={zoom}
           forceFitViewport={forceFitViewport}
-          onZoomChange={value => console.log("onZoomChange", value)}
+          onZoomChange={value => this.handleZoomChange(value)}
         />
         <Slider
           value={zoom}
