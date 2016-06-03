@@ -1,3 +1,4 @@
+import assign from "object-assign";
 import React, { Component } from "react";
 import IScroll from "iscroll";
 
@@ -5,9 +6,13 @@ export default class ImageViewer extends Component {
   static defaultProps = {
     className: "image-viewer",
     style: {
+      position: "relative",
+      width: "100%",
+      height: "100%",
       overflow: "hidden"
     },
     zoom: 1,
+    forceFitViewport: false,
     iScrollOptions: {
       bounce: true,
       click: true,
@@ -15,8 +20,10 @@ export default class ImageViewer extends Component {
       scrollX: true,
       scrollY: true,
       mouseWheel: true,
-      scrollbars: true
+      scrollbars: true,
+      fadeScrollbars: true
     },
+    onZoomChange: () => {}
   };
 
   constructor(props) {
@@ -26,16 +33,37 @@ export default class ImageViewer extends Component {
       width: 0,
       height: 0,
       naturalWidth: 0,
-      naturalHeight: 0
+      naturalHeight: 0,
+      vw: 0,
+      vh: 0
     };
   }
 
   componentDidMount() {
     const { iScrollOptions, zoom } = this.props;
-    const { iScroll, image } = this.refs;
+    const { viewport, image } = this.refs;
+    const { width: vw, height: vh } = this.getViewportSize();
 
-    this.iScroll = new IScroll(iScroll, iScrollOptions);
+    this.setState({vw, vh});
+
+    this.iScroll = new IScroll(viewport, iScrollOptions);
     this.updateImageSize(zoom);
+  }
+
+  componentDidUpdate() {
+    const { vw, vh } = this.state;
+    const { width: dw } = this.refs.image;
+    const { width, height } = this.getViewportSize();
+    const { forceFitViewport } = this.props;
+    const zoom = dw / width;
+
+    if (vw !== width || vh !== height) {
+      this.setState({vw: width, vh: height});
+    }
+
+    if (forceFitViewport && zoom !== this.props.zoom) {
+      this.props.onZoomChange(zoom);
+    }
   }
 
   componentWillUnmount() {
@@ -44,8 +72,11 @@ export default class ImageViewer extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.zoom !== this.props.zoom) {
-      this.updateImageSize(nextProps.zoom);
+    if (nextProps.forceFitViewport !== this.props.forceFitViewport && nextProps.forceFitViewport === true) {
+      this.updateImageSize(null, true);
+
+    } else if (nextProps.zoom !== this.props.zoom) {
+      this.updateImageSize(nextProps.zoom, false);
     }
   }
 
@@ -67,18 +98,51 @@ export default class ImageViewer extends Component {
     });
   }
 
-  updateImageSize(zoom) {
-    const { image } = this.refs;
+  updateImageSize(zoom = null, forceFitViewport) {
+    return new Promise((resolve, reject) => {
+      const { image } = this.refs;
 
-    this.getImageSize().then(({width, height, naturalWidth, naturalHeight}) => {
-      this.setState({
-        width: Math.max(1, naturalWidth * zoom),
-        height: Math.max(1, naturalHeight * zoom),
-        naturalWidth,
-        naturalHeight
+      this.getImageSize().then(({width: w, height: h, naturalWidth, naturalHeight}) => {
+        let width;
+        let height;
+
+        if (forceFitViewport) {
+          const size = this.normalizeImageSize(naturalWidth, naturalHeight);
+          width = size.width;
+          height = size.height;
+
+        } else {
+          width = naturalWidth * zoom;
+          height = naturalHeight * zoom;
+        }
+
+        this.setState({
+          width,
+          height,
+          naturalWidth,
+          naturalHeight
+        });
+
+        this.refresh();
       });
-      this.refresh();
     });
+  }
+
+  normalizeImageSize(dw, dh) {
+    const { width: vw, height: vh } = this.getViewportSize();
+    const vRatio = vw / vh;
+    const dRatio = dw / dh;
+    const ratio = vRatio > dRatio ? vh / dh : vw / dw;
+
+    return {
+      width: dw * ratio,
+      height: dh * ratio
+    };
+  }
+
+  getViewportSize() {
+    const { width, height } = this.refs.viewport.getBoundingClientRect();
+    return {width, height};
   }
 
   refresh() {
@@ -88,10 +152,10 @@ export default class ImageViewer extends Component {
   render() {
     const { image, className } = this.props;
     const { width, height } = this.state;
-    const style = Object.assign({}, ImageViewer.defaultProps.style, this.props.style);
+    const style = assign({}, ImageViewer.defaultProps.style, this.props.style);
 
     return (
-      <div ref="iScroll" className={className} style={style}>
+      <div ref="viewport" className={className} style={style}>
         <div ref="wrapper" style={{
           position: "relative",
           width: "100%",
