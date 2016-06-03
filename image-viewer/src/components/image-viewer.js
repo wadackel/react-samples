@@ -7,7 +7,7 @@ export default class ImageViewer extends Component {
     style: {
       overflow: "hidden"
     },
-    zoom: 0.5,
+    zoom: 1,
     iScrollOptions: {
       bounce: true,
       click: true,
@@ -31,11 +31,11 @@ export default class ImageViewer extends Component {
   }
 
   componentDidMount() {
-    const { iScrollOptions } = this.props;
+    const { iScrollOptions, zoom } = this.props;
     const { iScroll, image } = this.refs;
 
     this.iScroll = new IScroll(iScroll, iScrollOptions);
-    this.updateImageSize();
+    this.updateImageSize(zoom);
   }
 
   componentWillUnmount() {
@@ -45,7 +45,7 @@ export default class ImageViewer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.zoom !== this.props.zoom) {
-      this.updateImageSize();
+      this.updateImageSize(nextProps.zoom);
     }
   }
 
@@ -67,8 +67,7 @@ export default class ImageViewer extends Component {
     });
   }
 
-  updateImageSize() {
-    const { zoom } = this.props;
+  updateImageSize(zoom) {
     const { image } = this.refs;
 
     this.getImageSize().then(({width, height, naturalWidth, naturalHeight}) => {

@@ -7,10 +7,23 @@ import Slider from "material-ui/Slider";
 import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import NavigationClose from "material-ui/svg-icons/navigation/close";
 import ImageIcon from "material-ui/svg-icons/image/image";
+import ZoomInIcon from "material-ui/svg-icons/action/zoom-in";
+import ZoomOutIcon from "material-ui/svg-icons/action/zoom-out";
+import ArrowDropRight from "material-ui/svg-icons/navigation-arrow-drop-right";
 import bindHandlerHelper from "../utils/bind-handler-helper";
 import ImageViewer from "./image-viewer";
 
 const APP_BAR_HEIGHT = 64;
+
+const Zoom = {
+  MIN: 0.1,
+  MAX: 2
+};
+
+const Images = {
+  IMAGE1: "./images/image1.png",
+  IMAGE2: "./images/image2.png"
+};
 
 export default class App extends Component {
   constructor(props) {
@@ -19,7 +32,7 @@ export default class App extends Component {
     this.state = {
       sw: 0,
       sh: 0,
-      image: "./images/image1.png",
+      image: Images.IMAGE1,
       zoom: 1
     };
 
@@ -49,14 +62,15 @@ export default class App extends Component {
     this.setState({sw, sh});
   }
 
-  handleImageChange(e, child) {
+  handleImageChange(image) {
     this.setState({
-      image: child.props.value,
-      zoom: 1
+      zoom: 1,
+      image
     });
   }
 
-  handleZoomChange(e, zoom) {
+  handleZoomChange(value) {
+    const zoom = Math.max(Zoom.MIN, Math.min(Zoom.MAX, value));
     this.setState({zoom});
   }
 
@@ -75,10 +89,23 @@ export default class App extends Component {
               }
               targetOrigin={{horizontal: "right", vertical: "top"}}
               anchorOrigin={{horizontal: "right", vertical: "top"}}
-              onItemTouchTap={this.handleImageChange}
             >
-              <MenuItem primaryText="image1" leftIcon={<ImageIcon />} value="./images/image1.png" />
-              <MenuItem primaryText="image2" leftIcon={<ImageIcon />} value="./images/image2.png" />
+              <MenuItem
+                primaryText="Zoom"
+                rightIcon={<ArrowDropRight />}
+                menuItems={[
+                  <MenuItem primaryText="Zoom in" leftIcon={<ZoomInIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom + 0.4)} />,
+                  <MenuItem primaryText="Zoom out" leftIcon={<ZoomOutIcon />} onTouchTap={() => this.handleZoomChange(this.state.zoom - 0.4)} />,
+                ]}
+              />
+              <MenuItem
+                primaryText="Images"
+                rightIcon={<ArrowDropRight />}
+                menuItems={[
+                  <MenuItem primaryText="image1" leftIcon={<ImageIcon />} onTouchTap={() => this.handleImageChange(Images.IMAGE1)} />,
+                  <MenuItem primaryText="image2" leftIcon={<ImageIcon />} onTouchTap={() => this.handleImageChange(Images.IMAGE2)} />
+                ]}
+              />
             </IconMenu>
           }
           style={{
@@ -102,15 +129,15 @@ export default class App extends Component {
         />
         <Slider
           value={zoom}
-          min={0.1}
-          max={2}
+          min={Zoom.MIN}
+          max={Zoom.MAX}
           style={{
             position: "absolute",
             right: 30,
             bottom: 0,
             width: 300
           }}
-          onChange={this.handleZoomChange}
+          onChange={(e, value) => this.handleZoomChange(value)}
         />
       </div>
     );
