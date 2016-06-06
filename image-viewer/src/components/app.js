@@ -22,7 +22,8 @@ export default class App extends Component {
       "handleResize",
       "handleImageChange",
       "handleZoomChange",
-      "handleZoomFit"
+      "handleZoomFit",
+      "handleDoubleClick"
     ], this);
   }
 
@@ -50,6 +51,8 @@ export default class App extends Component {
   handleZoomChange(value) {
     const zoom = Math.max(Zoom.MIN, Math.min(Zoom.MAX, value));
 
+    console.log("ZOOM_CHANGE", zoom);
+
     this.setState({
       forceFitViewport: false,
       zoom
@@ -62,6 +65,10 @@ export default class App extends Component {
 
   handleImageChange(image) {
     this.setState({image});
+  }
+
+  handleDoubleClick() {
+    this.setState({forceFitViewport: true});
   }
 
   render() {
@@ -86,6 +93,7 @@ export default class App extends Component {
           zoom={zoom}
           forceFitViewport={forceFitViewport}
           onZoomChange={value => this.handleZoomChange(value)}
+          onDoubleClick={this.handleDoubleClick}
         />
         <Slider
           value={zoom}
